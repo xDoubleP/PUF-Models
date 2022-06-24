@@ -7,9 +7,10 @@ import pypuf.simulation
 import pypuf.io
 import parity_vector
 from matplotlib import pyplot as plt
+import time
+start_time = time.time()
 
-
-random.set_seed(1337) #reproducibility 
+random.set_seed(1337)  # reproducibility
 puf = pypuf.simulation.XORArbiterPUF(n=64, k=3, seed=1)
 challenges = pypuf.io.random_inputs(n=64, N=80000, seed=123)
 responses = puf.eval(challenges)
@@ -21,11 +22,11 @@ y = (1 - responses) // 2  # convert -1s to 0s
 
 print(y.shape, X.shape)
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state = 0)
+    X, y, test_size=0.2, random_state=0)
 
 model = Sequential()
 
-# less nodes and layer lead to better generalization 
+# less nodes and layer lead to better generalization
 model.add(Dense(12, input_dim=X.shape[1], activation='relu'))
 model.add(Dense(7, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
@@ -36,11 +37,12 @@ model.compile(loss='binary_crossentropy',
               optimizer='adam', metrics='accuracy')
 
 results = model.fit(X_train, y_train, epochs=500, batch_size=1000,
-                    validation_data = (X_test, y_test))
+                    validation_data=(X_test, y_test))
 
 
 scores = model.evaluate(X_test, y_test)
 print("Evaluate Accuracy: ", scores[1])
+print("--- %s seconds ---" % (time.time() - start_time))
 
 # Plot graphs
 loss = results.history["loss"]
